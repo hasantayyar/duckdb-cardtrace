@@ -1,0 +1,55 @@
+# Example descriptor for duckdb/community-extensions
+#
+# Submit as: extensions/cardtrace/description.yml
+# Do not merge this path into community-extensions until the public GitHub
+# repository exists and CI on this repo is green.
+#
+# extension:
+#   name: cardtrace
+#   description: Privacy-first EMV TLV and configurable ISO 8583 analytics for DuckDB
+#   version: 0.1.0
+#   language: C++
+#   build: cmake
+#   license: MIT
+#   maintainers:
+#     - <github-handle>
+#
+# repo:
+#   github: <org>/duckdb-extension-cardtrace
+#   ref: <commit-sha>
+#
+# docs:
+#   hello_world: |
+#     LOAD cardtrace;
+#     SELECT tag, name, decoded
+#     FROM emv_tlv_decode('9F2608A1B2C3D4E5F607089F270180');
+#   extended_description: |
+#     CardTrace decodes EMV BER-TLV payloads (e.g. ISO 8583 DE55) inside DuckDB
+#     with privacy-first defaults for PAN and track data.
+
+extension:
+  name: cardtrace
+  description: "Privacy-first EMV TLV and configurable ISO 8583 analytics for DuckDB"
+  version: 0.1.0
+  language: C++
+  build: cmake
+  license: MIT
+  maintainers:
+    - REPLACE_ME
+
+repo:
+  github: REPLACE_ME/duckdb-extension-cardtrace
+  ref: REPLACE_ME
+
+docs:
+  hello_world: |
+    LOAD cardtrace;
+    SELECT tag, name, length, value_hex, decoded
+    FROM emv_tlv_decode('9F2608A1B2C3D4E5F607089F270180');
+  extended_description: |
+    CardTrace is a privacy-first DuckDB extension for decoding and analysing EMV
+    payment data (and, in a later release, configurable ISO 8583 messages) with SQL.
+
+    MVP functions include emv_tlv_decode, emv_tag, emv_tvr_decode, emv_tsi_decode,
+    emv_cvm_decode, emv_cid_decode, pan_luhn_valid, and pan_mask. PAN and track
+    data are redacted during parsing unless unsafe := true is set explicitly.

@@ -1,0 +1,120 @@
+# name: test/sql/cardtrace.test
+# description: CardTrace EMV TLV, bitfield, and PAN helpers
+# group: [sql]
+
+# Before we load the extension, these should fail
+statement error
+SELECT pan_mask('4111111111111111');
+----
+Catalog Error: Scalar Function with name pan_mask does not exist!
+
+require cardtrace
+
+# --- emv_tlv_decode: basic cryptogram + CID ---
+query IIIIT
+SELECT tag, name, length, value_hex, decoded
+FROM emv_tlv_decode('9F2608A1B2C3D4E5F607089F270180')
+ORDER BY tag;
+----
+9F26	Application Cryptogram	8	A1B2C3D4E5F60708	NULL
+9F27	Cryptogram Information Data	1	80	ARQC
+
+# Hex separators and lowercase are accepted
+query I
+SELECT tag FROM emv_tlv_decode('9f27:01:80');
+----
+9F27
+
+# --- emv_tag extraction ---
+query II
+SELECT emv_tag('9F2608A1B2C3D4E5F607089F270180', '9F27') AS cid,
+       emv_tag('9F2608A1B2C3D4E5F607089F270180', '9F26') AS ac;
+----
+80	A1B2C3D4E5F60708
+
+query I
+SELECT emv_tag('9F270180', '95');
+----
+NULL
+
+# --- CID / TVR / TSI / CVM decoders ---
+query I
+SELECT emv_cid_decode('80');
+----
+ARQC
+
+query I
+SELECT emv_cid_decode('40');
+----
+TC
+
+query I
+SELECT emv_cid_decode('00');
+----
+AAC
+
+query I
+SELECT emv_tvr_decode('0000008000');
+----
+Transaction exceeds floor limit
+
+query I
+SELECT emv_tvr_decode(emv_tag('95050000008000', '95'));
+----
+Transaction exceeds floor limit
+
+query I
+SELECT emv_tsi_decode('E800');
+----
+Offline data authentication was performed; Cardholder verification was performed; Card risk management was performed; Terminal risk management was performed
+
+query I
+SELECT emv_cvm_decode('020002');
+----
+Enciphered PIN verified online; condition=Always; result=Successful
+
+# Killer-use-case style composition over synthetic DE55
+query III
+SELECT emv_tag(de55, '9F27') AS cryptogram_type,
+       emv_cid_decode(emv_tag(de55, '9F27')) AS cid,
+       emv_tvr_decode(emv_tag(de55, '95')) AS tvr
+FROM (SELECT '9F270180950500000080009F2608A1B2C3D4E5F60708' AS de55);
+----
+80	ARQC	Transaction exceeds floor limit
+
+# --- PAN helpers (synthetic test PANs only) ---
+query II
+SELECT pan_luhn_valid('4111111111111111'), pan_mask('4111111111111111');
+----
+true	411111******1111
+
+query II
+SELECT pan_luhn_valid('4111111111111112'), pan_mask('4111 1111 1111 1111');
+----
+false	411111******1111
+
+# --- Privacy defaults: PAN masked, track redacted ---
+query III
+SELECT tag, value_hex, decoded
+FROM emv_tlv_decode('5A084111111111111111')
+ORDER BY tag;
+----
+5A	411111******1111	411111******1111
+
+query III
+SELECT tag, value_hex, decoded
+FROM emv_tlv_decode('57104111111111111111D2512201')
+ORDER BY tag;
+----
+57	[REDACTED]	track_data_redacted
+
+# Malformed input is rejected strictly
+statement error
+SELECT * FROM emv_tlv_decode('9F27');
+----
+emv_tlv_decode: malformed BER-TLV
+
+statement error
+SELECT * FROM emv_tlv_decode('ZZ');
+----
+Invalid hex character
