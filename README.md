@@ -1,10 +1,13 @@
 # CardTrace
 
-**CardTrace is a privacy-first DuckDB extension for decoding and analysing EMV payment data and configurable ISO 8583 messages directly with SQL.**
+CardTrace is a DuckDB extension that decodes EMV payment data and configurable ISO 8583 messages in SQL. Sensitive fields are redacted by default.
 
 This repository is based on the [DuckDB extension template](https://github.com/duckdb/extension-template).
 
 ## Status
+
+> [!WARNING]
+> This is a personal duckdb extension written with AI assisted tools. Use it with your own risk. Currently in MVP phase.
 
 | Phase | Scope | Status |
 |-------|-------|--------|
@@ -55,13 +58,13 @@ GROUP BY ALL;
 
 ## Privacy defaults
 
-CardTrace is designed so payment engineers can analyse chip data without casually exposing cardholder data:
+By default, CardTrace redacts PAN, track 2, and PIN data during parse:
 
 * **PAN** (tag `5A`) is masked automatically (`411111******1111`).
 * **Track 2 equivalent data** (tag `57`) is never returned unless `unsafe := true`.
 * **PIN blocks** (tag `99`) are shown only as presence/length metadata unless `unsafe := true`.
-* Redaction happens **during parsing**, not as a post-process SQL step.
-* This repository ships **synthetic fixtures only** — never real card data.
+* Redaction happens during parsing, not as a post-process SQL step.
+* This repository ships synthetic fixtures only. Do not add real card data.
 
 ```sql
 -- Explicit opt-in required for raw sensitive values
@@ -70,7 +73,7 @@ SELECT * FROM emv_tlv_decode(payload, unsafe := true);
 
 ## Building
 
-DuckDB extensions may use VCPKG. CardTrace currently has **no third-party dependencies**, so VCPKG is optional.
+DuckDB extensions may use VCPKG. CardTrace has no third-party dependencies, so VCPKG is optional.
 
 ```sh
 git submodule update --init --recursive
@@ -98,7 +101,7 @@ Run only CardTrace SQL tests:
 2. EMV tag extraction and common bit-field decoders
 3. PAN-safe defaults
 4. Synthetic golden test corpus + DE55 benchmarks
-5. **Phase 2:** `read_iso8583(path, profile := '...', redact_pan := true)` with external JSON profiles (MTI, bitmaps, data elements, DE55 auto-decode) — no hard-coded Visa/Mastercard/acquirer dialects
+5. **Phase 2:** `read_iso8583(path, profile := '...', redact_pan := true)` with external JSON profiles (MTI, bitmaps, data elements, DE55 auto-decode). Visa, Mastercard, and acquirer dialects stay in those JSON files, not in C++.
 
 ## Community publication
 
