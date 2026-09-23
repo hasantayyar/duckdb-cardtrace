@@ -38,7 +38,7 @@ struct EmvTlvGlobalState : public GlobalTableFunctionState {
 
 unique_ptr<FunctionData> EmvTlvBind(ClientContext &context, TableFunctionBindInput &input,
                                     vector<LogicalType> &return_types, vector<Identifier> &names) {
-	names = {Identifier("tag"), Identifier("name"),     Identifier("length"),
+	names = {Identifier("tag"),       Identifier("name"),    Identifier("length"),
 	         Identifier("value_hex"), Identifier("decoded"), Identifier("depth")};
 	return_types = {LogicalType::VARCHAR, LogicalType::VARCHAR, LogicalType::UINTEGER,
 	                LogicalType::VARCHAR, LogicalType::VARCHAR, LogicalType::UINTEGER};
@@ -249,10 +249,9 @@ static void SetIsoReturnTypes(vector<LogicalType> &return_types, vector<Identifi
 	names.emplace_back("decoded");
 	names.emplace_back("offset");
 	names.emplace_back("error");
-	return_types.insert(return_types.end(),
-	                    {LogicalType::VARCHAR, LogicalType::VARCHAR, LogicalType::INTEGER, LogicalType::VARCHAR,
-	                     LogicalType::VARCHAR, LogicalType::VARCHAR, LogicalType::VARCHAR, LogicalType::UINTEGER,
-	                     LogicalType::VARCHAR});
+	return_types.insert(return_types.end(), {LogicalType::VARCHAR, LogicalType::VARCHAR, LogicalType::INTEGER,
+	                                         LogicalType::VARCHAR, LogicalType::VARCHAR, LogicalType::VARCHAR,
+	                                         LogicalType::VARCHAR, LogicalType::UINTEGER, LogicalType::VARCHAR});
 }
 
 static string NamedString(TableFunctionBindInput &input, const string &key) {

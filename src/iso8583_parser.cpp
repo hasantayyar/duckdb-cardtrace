@@ -203,8 +203,8 @@ Iso8583Message ParseIso8583Message(const string &payload, const Iso8583Profile &
 
 		auto *def = profile.FindField(NumericCast<int>(de));
 		if (!def) {
-			field_value.error = StringUtil::Format("DE%llu present in bitmap but missing from profile",
-			                                       static_cast<uint64_t>(de));
+			field_value.error =
+			    StringUtil::Format("DE%llu present in bitmap but missing from profile", static_cast<uint64_t>(de));
 			result.fields.push_back(std::move(field_value));
 			result.error = field_value.error;
 			break;
@@ -246,8 +246,8 @@ Iso8583Message ParseIso8583Message(const string &payload, const Iso8583Profile &
 		}
 
 		if (pos + on_wire_len > msg.size()) {
-			field_value.error = StringUtil::Format("DE%d truncated (need %llu chars)", def->de,
-			                                       static_cast<uint64_t>(on_wire_len));
+			field_value.error =
+			    StringUtil::Format("DE%d truncated (need %llu chars)", def->de, static_cast<uint64_t>(on_wire_len));
 			result.fields.push_back(std::move(field_value));
 			result.error = field_value.error;
 			break;

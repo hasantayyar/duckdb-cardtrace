@@ -8,18 +8,16 @@ set(LOADABLE_EXTENSION_NAME ${TARGET_NAME}_loadable_extension)
 
 project(${TARGET_NAME})
 
-set(CMAKE_CXX_STANDARD "17" CACHE STRING "C++ standard to enforce")
+set(CMAKE_CXX_STANDARD
+    "17"
+    CACHE STRING "C++ standard to enforce")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(src/include)
 
 set(EXTENSION_SOURCES
-    src/cardtrace_extension.cpp
-    src/emv_tlv.cpp
-    src/emv_decoders.cpp
-    src/pan_utils.cpp
-    src/iso8583_profile.cpp
-    src/iso8583_parser.cpp)
+    src/cardtrace_extension.cpp src/emv_tlv.cpp src/emv_decoders.cpp
+    src/pan_utils.cpp src/iso8583_profile.cpp src/iso8583_parser.cpp)
 
 build_static_extension(${TARGET_NAME} ${EXTENSION_SOURCES})
 build_loadable_extension(${TARGET_NAME} " " ${EXTENSION_SOURCES})

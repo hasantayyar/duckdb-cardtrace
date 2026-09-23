@@ -117,8 +117,7 @@ struct JsonParser {
 			pos += 5;
 			return false;
 		}
-		throw InvalidInputException("iso8583 profile: expected boolean at position %llu",
-		                            static_cast<uint64_t>(pos));
+		throw InvalidInputException("iso8583 profile: expected boolean at position %llu", static_cast<uint64_t>(pos));
 	}
 
 	void SkipValue() {
