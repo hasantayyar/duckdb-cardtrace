@@ -6,10 +6,7 @@ testext
 test/python/__pycache__/
 
 ### CMake ###
-CMakeLists.txt.user
 CMakeCache.txt
-CMakeFiles
-CMakeScripts
 .cache
 
 ### CMake Patch ###
@@ -23,10 +20,6 @@ CMakeUserPresets.json
 .DS_Store
 .AppleDouble
 .LSOverride
-
-# Icon must end with two \r
-Icon
-
 
 # Thumbnails
 ._*

@@ -1,0 +1,76 @@
+# name: test/sql/iso8583.test
+# description: Configurable ISO 8583 decode via external JSON profiles
+# group: [sql]
+
+require cardtrace
+
+# Inline profile + synthetic authorization (DE 2,3,4,7,11)
+query IIIITT
+SELECT de, name, value, offset, error IS NULL AS ok, mti
+FROM iso8583_decode(
+  '020072200000000000001641111111111111110000000000000100000101011234123456',
+  '{
+    "name":"t","version":1,"encoding":"ascii",
+    "header":{"mti_length":4,"bitmap_encoding":"hex","secondary_bitmap":true},
+    "fields":{
+      "2":{"name":"Primary Account Number","length_type":"llvar","max_length":19,"content":"ascii","sensitive":"pan"},
+      "3":{"name":"Processing Code","length_type":"fixed","length":6,"content":"ascii"},
+      "4":{"name":"Amount, Transaction","length_type":"fixed","length":12,"content":"ascii"},
+      "7":{"name":"Transmission Date & Time","length_type":"fixed","length":10,"content":"ascii"},
+      "11":{"name":"System Trace Audit Number","length_type":"fixed","length":6,"content":"ascii"}
+    }
+  }'
+)
+ORDER BY de;
+----
+2	Primary Account Number	411111******1111	20	true	0200
+3	Processing Code	000000	38	true	0200
+4	Amount, Transaction	000000010000	44	true	0200
+7	Transmission Date & Time	0101011234	56	true	0200
+11	System Trace Audit Number	123456	66	true	0200
+
+# PAN redaction can be disabled explicitly
+query I
+SELECT value
+FROM iso8583_decode(
+  '020072200000000000001641111111111111110000000000000100000101011234123456',
+  '{"name":"t","version":1,"encoding":"ascii","fields":{"2":{"name":"PAN","length_type":"llvar","max_length":19,"sensitive":"pan"},"3":{"name":"PCODE","length_type":"fixed","length":6},"4":{"name":"AMT","length_type":"fixed","length":12},"7":{"name":"DT","length_type":"fixed","length":10},"11":{"name":"STAN","length_type":"fixed","length":6}}}',
+  redact_pan := false
+)
+WHERE de = 2;
+----
+4111111111111111
+
+# External profile file + DE55 EMV auto-decode
+query II
+SELECT de, decoded
+FROM iso8583_decode(
+  '020040000000000002001641111111111111110049F270180',
+  'profiles/generic_ascii.json'
+)
+WHERE de IN (2, 55)
+ORDER BY de;
+----
+2	NULL
+55	9F27=80(ARQC)
+
+# read_iso8583 over multi-message fixture
+query III
+SELECT message_idx, de, value
+FROM read_iso8583('test/fixtures/iso8583_ascii.log', profile := 'profiles/generic_ascii.json')
+WHERE de = 2
+ORDER BY message_idx;
+----
+0	2	411111******1111
+1	2	555555******4444
+
+# Missing profile field for a bitmap DE surfaces in the error column
+query II
+SELECT de, error
+FROM iso8583_decode(
+  '020072200000000000001641111111111111110000000000000100000101011234123456',
+  '{"name":"t","version":1,"encoding":"ascii","fields":{"2":{"name":"PAN","length_type":"llvar","max_length":19}}}'
+)
+WHERE error IS NOT NULL;
+----
+3	DE3 present in bitmap but missing from profile

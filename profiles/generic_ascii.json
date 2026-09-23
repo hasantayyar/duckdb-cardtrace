@@ -1,0 +1,107 @@
+{
+  "name": "generic-ascii",
+  "version": 1,
+  "encoding": "ascii",
+  "header": {
+    "mti_length": 4,
+    "bitmap_encoding": "hex",
+    "bitmap_length": 16,
+    "secondary_bitmap": true
+  },
+  "fields": {
+    "2": {
+      "name": "Primary Account Number",
+      "length_type": "llvar",
+      "max_length": 19,
+      "content": "ascii",
+      "sensitive": "pan"
+    },
+    "3": {
+      "name": "Processing Code",
+      "length_type": "fixed",
+      "length": 6,
+      "content": "ascii"
+    },
+    "4": {
+      "name": "Amount, Transaction",
+      "length_type": "fixed",
+      "length": 12,
+      "content": "ascii"
+    },
+    "7": {
+      "name": "Transmission Date & Time",
+      "length_type": "fixed",
+      "length": 10,
+      "content": "ascii"
+    },
+    "11": {
+      "name": "System Trace Audit Number",
+      "length_type": "fixed",
+      "length": 6,
+      "content": "ascii"
+    },
+    "14": {
+      "name": "Date, Expiration",
+      "length_type": "fixed",
+      "length": 4,
+      "content": "ascii"
+    },
+    "22": {
+      "name": "Point of Service Entry Mode",
+      "length_type": "fixed",
+      "length": 3,
+      "content": "ascii"
+    },
+    "35": {
+      "name": "Track 2 Data",
+      "length_type": "llvar",
+      "max_length": 37,
+      "content": "ascii",
+      "sensitive": "track"
+    },
+    "37": {
+      "name": "Retrieval Reference Number",
+      "length_type": "fixed",
+      "length": 12,
+      "content": "ascii"
+    },
+    "39": {
+      "name": "Response Code",
+      "length_type": "fixed",
+      "length": 2,
+      "content": "ascii"
+    },
+    "41": {
+      "name": "Card Acceptor Terminal ID",
+      "length_type": "fixed",
+      "length": 8,
+      "content": "ascii"
+    },
+    "42": {
+      "name": "Card Acceptor ID Code",
+      "length_type": "fixed",
+      "length": 15,
+      "content": "ascii"
+    },
+    "49": {
+      "name": "Currency Code, Transaction",
+      "length_type": "fixed",
+      "length": 3,
+      "content": "ascii"
+    },
+    "52": {
+      "name": "PIN Data",
+      "length_type": "fixed",
+      "length": 16,
+      "content": "hex",
+      "sensitive": "pin"
+    },
+    "55": {
+      "name": "ICC System Related Data",
+      "length_type": "lllvar",
+      "max_length": 999,
+      "content": "hex",
+      "emv_tlv": true
+    }
+  }
+}
