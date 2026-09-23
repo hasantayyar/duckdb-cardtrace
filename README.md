@@ -12,7 +12,7 @@ This repository is based on the [DuckDB extension template](https://github.com/d
 | Phase | Scope | Status |
 |-------|-------|--------|
 | MVP | BER-TLV decode, EMV tag extract, TVR/TSI/CVM/CID bitfields, PAN Luhn + mask | Implemented |
-| Phase 2 | Configurable ISO 8583 via external JSON profiles | Planned |
+| Phase 2 | Configurable ISO 8583 via external JSON profiles | Implemented |
 
 ## Quick start
 
@@ -30,7 +30,16 @@ FROM emv_tlv_decode('9F2608A1B2C3D4E5F607089F270180');
 | 9F26 | Application Cryptogram      |      8 | A1B2C3D4E5F60708   | NULL    |     0 |
 | 9F27 | Cryptogram Information Data |      1 | 80                 | ARQC    |     0 |
 
-## Functions (MVP)
+```sql
+SELECT de, name, value, decoded
+FROM read_iso8583(
+  'authorization.log',
+  profile := 'profiles/generic_ascii.json',
+  redact_pan := true
+);
+```
+
+## Functions
 
 | Function | Type | Description |
 |----------|------|-------------|
@@ -42,6 +51,8 @@ FROM emv_tlv_decode('9F2608A1B2C3D4E5F607089F270180');
 | `emv_cid_decode(value)` | scalar | Decode Cryptogram Information Data (tag 9F27) |
 | `pan_luhn_valid(value)` | scalar | Luhn check (synthetic / already-tokenized inputs) |
 | `pan_mask(value)` | scalar | Mask PAN to first 6 + last 4 |
+| `iso8583_decode(payload, profile [, redact_pan := true])` | table | Decode one ASCII ISO 8583 message using a JSON profile |
+| `read_iso8583(path, profile := '...', redact_pan := true)` | table | Decode one message per line from a file |
 
 ### Investigation pattern
 
@@ -101,7 +112,10 @@ Run only CardTrace SQL tests:
 2. EMV tag extraction and common bit-field decoders
 3. PAN-safe defaults
 4. Synthetic golden test corpus + DE55 benchmarks
-5. **Phase 2:** `read_iso8583(path, profile := '...', redact_pan := true)` with external JSON profiles (MTI, bitmaps, data elements, DE55 auto-decode). Visa, Mastercard, and acquirer dialects stay in those JSON files, not in C++.
+5. Configurable ISO 8583 via external JSON profiles (`iso8583_decode` / `read_iso8583`)
+6. Additional wire encodings (binary/EBCDIC) and more network dialect profiles
+
+Dialect profiles live under `profiles/`. See `profiles/README.md`.
 
 ## Community publication
 

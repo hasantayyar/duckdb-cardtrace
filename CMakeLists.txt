@@ -17,7 +17,9 @@ set(EXTENSION_SOURCES
     src/cardtrace_extension.cpp
     src/emv_tlv.cpp
     src/emv_decoders.cpp
-    src/pan_utils.cpp)
+    src/pan_utils.cpp
+    src/iso8583_profile.cpp
+    src/iso8583_parser.cpp)
 
 build_static_extension(${TARGET_NAME} ${EXTENSION_SOURCES})
 build_loadable_extension(${TARGET_NAME} " " ${EXTENSION_SOURCES})
