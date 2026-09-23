@@ -6,11 +6,12 @@
 #include "iso8583_parser.hpp"
 #include "iso8583_profile.hpp"
 #include "pan_utils.hpp"
+#include <optional>
 
 #include "duckdb.hpp"
 #include "duckdb/common/exception.hpp"
 #include "duckdb/common/file_system.hpp"
-#include "duckdb/common/optional.hpp"
+// #include "duckdb/common/optional.hpp"
 #include "duckdb/common/string_util.hpp"
 #include "duckdb/function/scalar_function.hpp"
 #include "duckdb/function/table_function.hpp"
@@ -102,7 +103,7 @@ void EmvTlvFunction(ClientContext &context, TableFunctionInput &data_p, DataChun
 void EmvTagScalar(DataChunk &args, ExpressionState &state, Vector &result) {
 	BinaryExecutor::Execute<string_t, string_t, string_t>(
 	    args.data[0], args.data[1], result, args.size(),
-	    [&](string_t payload, string_t tag) -> optional<string_t> {
+	    [&](string_t payload, string_t tag) -> std::optional<string_t> {
 		    auto parsed = cardtrace::DecodeBerTlvHex(payload.GetString(), true);
 		    if (!parsed.error.empty()) {
 			    throw InvalidInputException("emv_tag: malformed BER-TLV (%s)", parsed.error);
@@ -110,7 +111,7 @@ void EmvTagScalar(DataChunk &args, ExpressionState &state, Vector &result) {
 		    cardtrace::ApplyPrivacy(parsed.entries, false);
 		    auto value = cardtrace::FindTagValueHex(parsed, tag.GetString());
 		    if (value.empty()) {
-			    return nullopt;
+			    return std::nullopt;
 		    }
 		    return StringVector::AddString(result, value);
 	    });
@@ -118,10 +119,10 @@ void EmvTagScalar(DataChunk &args, ExpressionState &state, Vector &result) {
 
 void EmvTvrDecodeScalar(DataChunk &args, ExpressionState &state, Vector &result) {
 	UnaryExecutor::Execute<string_t, string_t>(args.data[0], result, args.size(),
-	                                           [&](string_t value) -> optional<string_t> {
+	                                           [&](string_t value) -> std::optional<string_t> {
 		                                           auto decoded = cardtrace::DecodeTvrHex(value.GetString());
 		                                           if (decoded.empty()) {
-			                                           return nullopt;
+			                                           return std::nullopt;
 		                                           }
 		                                           return StringVector::AddString(result, decoded);
 	                                           });
@@ -129,10 +130,10 @@ void EmvTvrDecodeScalar(DataChunk &args, ExpressionState &state, Vector &result)
 
 void EmvTsiDecodeScalar(DataChunk &args, ExpressionState &state, Vector &result) {
 	UnaryExecutor::Execute<string_t, string_t>(args.data[0], result, args.size(),
-	                                           [&](string_t value) -> optional<string_t> {
+	                                           [&](string_t value) -> std::optional<string_t> {
 		                                           auto decoded = cardtrace::DecodeTsiHex(value.GetString());
 		                                           if (decoded.empty()) {
-			                                           return nullopt;
+			                                           return std::nullopt;
 		                                           }
 		                                           return StringVector::AddString(result, decoded);
 	                                           });
@@ -140,10 +141,10 @@ void EmvTsiDecodeScalar(DataChunk &args, ExpressionState &state, Vector &result)
 
 void EmvCvmDecodeScalar(DataChunk &args, ExpressionState &state, Vector &result) {
 	UnaryExecutor::Execute<string_t, string_t>(args.data[0], result, args.size(),
-	                                           [&](string_t value) -> optional<string_t> {
+	                                           [&](string_t value) -> std::optional<string_t> {
 		                                           auto decoded = cardtrace::DecodeCvmHex(value.GetString());
 		                                           if (decoded.empty()) {
-			                                           return nullopt;
+			                                           return std::nullopt;
 		                                           }
 		                                           return StringVector::AddString(result, decoded);
 	                                           });
@@ -151,10 +152,10 @@ void EmvCvmDecodeScalar(DataChunk &args, ExpressionState &state, Vector &result)
 
 void EmvCidDecodeScalar(DataChunk &args, ExpressionState &state, Vector &result) {
 	UnaryExecutor::Execute<string_t, string_t>(args.data[0], result, args.size(),
-	                                           [&](string_t value) -> optional<string_t> {
+	                                           [&](string_t value) -> std::optional<string_t> {
 		                                           auto decoded = cardtrace::DecodeCidHex(value.GetString());
 		                                           if (decoded.empty()) {
-			                                           return nullopt;
+			                                           return std::nullopt;
 		                                           }
 		                                           return StringVector::AddString(result, decoded);
 	                                           });
